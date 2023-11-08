@@ -7,10 +7,14 @@ The code creates a web application using Streamlit, a Python library for buildin
 
 # Import necessary libraries
 import streamlit as st
+import os
 from langchain.chains import ConversationChain
 from langchain.chains.conversation.memory import ConversationEntityMemory
 from langchain.chains.conversation.prompt import ENTITY_MEMORY_CONVERSATION_TEMPLATE
 from langchain.llms import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Set Streamlit page configuration
 st.set_page_config(page_title='🧠MemoryBot🤖', layout='wide')
@@ -68,10 +72,12 @@ with st.sidebar.expander("🛠️ ", expanded=False):
 
 # Set up the Streamlit app layout
 st.title("🤖 Chat Bot with 🧠")
-st.subheader(" Powered by 🦜 LangChain + OpenAI + Streamlit")
+# "🤖 Chat Bot with 🧠🤖 Chat Bot with 🧠🧠" 
+st.subheader(" Powered by 🦜 LangChain + OpenAI")
 
 # Ask the user to enter their OpenAI API key
-API_O = st.sidebar.text_input("API-KEY", type="password")
+#API_O = st.sidebar.text_input("API-KEY", type="password")  # removed this because we are getting this value from .env file
+API_O = os.environ.get("OPEN_API_KEY")
 
 # Session state storage would be ideal
 if API_O:
