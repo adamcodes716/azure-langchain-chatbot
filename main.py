@@ -7,12 +7,14 @@ The code creates a web application using Streamlit, a Python library for buildin
 
 # Import necessary libraries
 import streamlit as st
-import os
+#import streamlit_nested_layout
 from langchain.chains import ConversationChain
 from langchain.chains.conversation.memory import ConversationEntityMemory
 from langchain.chains.conversation.prompt import ENTITY_MEMORY_CONVERSATION_TEMPLATE
-from langchain.llms import OpenAI
+#from langchain.llms import OpenAI
+from langchain.llms import AzureOpenAI
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
@@ -58,35 +60,53 @@ def new_chat():
     st.session_state.entity_memory.buffer.clear()
 
 # Set up sidebar with various options
-with st.sidebar.expander("🛠️ ", expanded=False):
+with st.sidebar:
+# with st.sidebar.expander("🛠️ ", expanded=False):   # this caused a nested expander error
     # Option to preview memory store
     if st.checkbox("Preview memory store"):
         with st.expander("Memory-Store", expanded=False):
             st.session_state.entity_memory.store
     # Option to preview memory buffer
     if st.checkbox("Preview memory buffer"):
-        with st.expander("Bufffer-Store", expanded=False):
+        with st.expander("Buffer-Store", expanded=False):
             st.session_state.entity_memory.buffer
-    MODEL = st.selectbox(label='Model', options=['gpt-3.5-turbo','text-davinci-003','text-davinci-002','code-davinci-002'])
+    #MODEL = st.selectbox(label='Model', options=['gpt-3.5-turbo','text-davinci-003','text-davinci-002','code-davinci-002'])
     K = st.number_input(' (#)Summary of prompts to consider',min_value=3,max_value=1000)
 
 # Set up the Streamlit app layout
-st.title("🤖 Chat Bot with 🧠")
-# "🤖 Chat Bot with 🧠🤖 Chat Bot with 🧠🧠" 
+st.title("🗣️ Chat Bot for ⚖️")
 st.subheader(" Powered by 🦜 LangChain + OpenAI")
 
 # Ask the user to enter their OpenAI API key
-#API_O = st.sidebar.text_input("API-KEY", type="password")  # removed this because we are getting this value from .env file
-API_O = os.environ.get("OPEN_API_KEY")
+API_O = st.sidebar.text_input("API-KEY", type="password")  # removed this because we are getting this value from .env file
+#API_O = os.environ.get("OPEN_API_KEY")
+AZURE_OPEN_API_KEY = os.environ.get("AZURE_OPEN_API_KEY")
+print(AZURE_OPEN_API_KEY)
+print("docker registry url: ", os.environ.get("DOCKER_REGISTRY_SERVER_URL"))
 
 # Session state storage would be ideal
-if API_O:
+#if API_O:
+if AZURE_OPEN_API_KEY:
     # Create an OpenAI instance
-    llm = OpenAI(temperature=0,
-                openai_api_key=API_O, 
-                model_name=MODEL, 
-                verbose=False) 
-
+    #os.environ["OPENAI_API_TYPE"] = "azure"
+    #os.environ["OPENAI_API_VERSION"] = "2023-05-15"   # os.getenv("AZURE_OPENAI_ENDPOINT")
+    #os.environ["OPENAI_API_BASE"] = "https://use-openai.openai.azure.com/"
+    #os.environ["OPENAI_API_KEY"] = AZURE_OPEN_API_KEY # "c7be4f73105a41dc843e9a8efc723569"
+    
+    
+    #llm = OpenAI(temperature=0,
+    #           openai_api_key=API_O, 
+    #           model_name=MODEL, 
+    #           verbose=False) 
+    llm = AzureOpenAI(
+                      openai_api_type="azure",
+                      openai_api_key=os.getenv("AZURE_OPEN_API_KEY"),
+                      openai_api_base=os.getenv("AZURE_OPENAI_BASE"),
+                      deployment_name=os.getenv("AZURE_DEPLOYMENT_NAME"),
+                      model=os.getenv("AZURE_DEPLOYMENT_NAME"),
+                      temperature=0.7,
+                      openai_api_version=os.getenv("OPENAI_VERSION"))                      
+                      #model_kwargs={"api_type": "azure", "api_version": "2023-05-15"})
 
     # Create a ConversationEntityMemory object if not already created
     if 'entity_memory' not in st.session_state:
@@ -99,7 +119,7 @@ if API_O:
             memory=st.session_state.entity_memory
         )  
 else:
-    st.sidebar.warning('API key required to try this app.The API key is not stored in any form.')
+    st.sidebar.warning('API key required to try this app')
     # st.stop()
 
 
