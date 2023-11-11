@@ -4,19 +4,26 @@ from backend.core import run_llm
 import streamlit as st
 from streamlit_chat import message
 import time
+import random
 
-st.header("LangChain Documentation Helper Bot")
+#st.header("LangChain Documentation Helper Bot")
+st.set_page_config(page_title="Chat with your documentation", page_icon=" :page_with_curl:")
+st.markdown("<h1 style='text-align: center;'>Langchain Documentation Helper</h1>", unsafe_allow_html=True)
 
+random_number1 = str(random.random())
+prompt = st.text_input("Prompt", placeholder="Enter prompt here..", key="user_input")
 
-prompt = st.text_input("Prompt", placeholder="Enter prompt here..")
+def reset_conversation():
+    st.session_state["user_prompt_history"] = []
+    st.session_state["chat_answers_history"] = []
+    st.session_state["chat_history"] = []
 
 with st.sidebar:
-    with st.echo():
-        st.write("This code will be printed to the sidebar.")
-
     with st.spinner("Loading..."):
-        time.sleep(5)
+        time.sleep(1)
     st.success("Done!")
+    random_number = str(random.random())
+    st.sidebar.button('New Chat', on_click=reset_conversation, key="button1")
 
 if "user_prompt_history" not in st.session_state:
     st.session_state["user_prompt_history"] = []
